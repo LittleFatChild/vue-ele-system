@@ -3,7 +3,7 @@
         <div class="content">
             <div class="nav">
                 <router-link to="/login/sign" tag="el-button" type="primary" class="signbtn">登录</router-link>
-                <router-link to="/login/register" tag="el-button" type="primary" class="signbtn">注册</router-link>
+                <router-link to="/login/register" tag="el-button" type="primary" class="signbtn" style="margin-left: 0">注册</router-link>
             </div>
             <router-view></router-view>
         </div>
@@ -13,7 +13,6 @@
 <script>
 export default {
     name: 'Login',
-
 }
 </script>
 
@@ -45,9 +44,6 @@ export default {
     
     .router-link-exact-active {
     //   color: deeppink;
-        width: 88px;
-        height: 36px;
         background-color: #304256;
-        color: #fff
     }
 </style>

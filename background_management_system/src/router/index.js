@@ -13,9 +13,6 @@ const routes = [
     {
         path: "/login",
         name: "Login",
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
         component: () => import("../views/Login.vue"),//webpackChunkName: "about"
         redirect: '/login/sign',
         children:[
@@ -30,6 +27,10 @@ const routes = [
             }
         ]
     },
+    // {
+    //     path: '/index',
+    //     component: () => import("../views/index.vue")
+    // },
     {
         path: '/',
         redirect: '/home'
@@ -42,21 +43,44 @@ const router = new VueRouter({
     routes
 });
 
-//  // 路由守卫
-router.beforeEach((to, from, next) => {
-    // console.log(to);// 去
-    // console.log(from);// 来自
-    const isLogin = localStorage.getItem('ele_login') ? true : false;
-    const reg = /(login\/)?(sign)|(register)/
-    if( reg.test(to.path) ){
-        next();
-        console.log(true);
-    } else{
-        isLogin ? next('/') : next('/login');
-        console.log(to.path);
-        console.log(reg.test(to.path) )
-        console.log('Please login first');
-    }
-})
+// //  // 路由守卫
+// router.beforeEach((to, from, next) => {
+//     // console.log(to);// 去
+//     // console.log(from);// 来自
+    
+//     const isLogin = localStorage.getItem('ele_login') ? true : false;
+//     const lreg = /^(\/login)?=\/(\/s)|(sign$)|(register)$/
+//     // if( lreg.test(to.path) ){
+//     //     next();
+//     // } else{
+//     //     isLogin ? next('/') : next('/login');
+//     //     console.log(to.path);
+//     //     console.log(reg.test(to.path) )
+//     //     console.log('Please login first');
+//     // }
+
+//     const isHome = localStorage.getItem('ele_home') ? true : false;
+//     const hreg = /^\/home$/
+//     // if ( hreg.test(to.path) ) {
+//     //     next();
+//     // } else {
+//     //     isHome ? next('/') : next('/home');
+//     //     console.log(to.path);
+//     //     console.log(reg.test(to.path))
+//     //     console.log('Please login first');
+//     // }
+
+//     if ( hreg.test(to.path) || lreg.test(to.path)) {
+//         next();
+//     } else {
+//         if ( isHome || isLogin ){
+//             next('/')
+//         }else{
+//             next('/home')
+//         }
+//         // (isHome || isLogin) ? next('/') : next('/home') || next('/login');
+//         // console.log('Please login first');
+//     }
+// })
 
 export default router;

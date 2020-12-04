@@ -2,15 +2,15 @@
     <div class="sign">
         <div class="content">
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="330px" class="demo-ruleForm" :label-position="labelPosition">
-                <el-form-item label="用户名" prop="pass">
-                    <el-input type="test" v-model="ruleForm.pass" autocomplete="off"></el-input>
+                <el-form-item label="邮箱" prop="username">
+                    <el-input type="test" v-model="ruleForm.username" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="密码" prop="checkPass">
-                    <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+                <el-form-item label="密码" prop="password">
+                    <el-input type="password" v-model="ruleForm.password" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="验证码" prop="age">
+                <el-form-item label="验证码" prop="vilecode">
                     <el-col :span="16">
-                        <el-input v-model.number="ruleForm.age" class="ruleofinp"></el-input>
+                        <el-input v-model="ruleForm.vilecode" class="ruleofinp"></el-input>
                     </el-col>
                      <el-col :span="2">
                         <el-button type="primary" class="sendrule">发送验证码</el-button>
@@ -24,75 +24,75 @@
 </template>
 
 <script>
+import reg from '../../utils/validdate.js'
 export default {
     name: 'Sign',
     data() {
-        var checkAge = ( rule, value, callback ) => {
+        var validatevcde = ( rule, value, callback ) => {
+            let reg = /^[a-z0-9]{6}$/;
+            // this.ruleForm.vilecode = value = iVt(value);
             if (!value) {
                 return callback(new Error('验证码不能为空'));
             }
             setTimeout(() => {
-                if ( !Number.isInteger(value) ) {
-                    callback( new Error('请输入数字值') );
-                } else {
-                if ( value < 18 ) {
-                    callback( new Error('必须年满18岁') );
+                if ( !reg.test(value) ) {
+                    callback( new Error('验证码为六位字符') );
                 } else {
                     callback();
                 }
-                }
-            }, 1000);
+            }, 800);
         };
-        var validatePass = (rule, value, callback) => {
+        var validateuser = (rule, value, callback) => {
+            var reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+            // this.ruleForm.username = value = eVt(value);
             if ( value === '' ) {
-                callback(new Error('请输入用户名'));
+                callback( new Error('请输入邮箱') );
+            } else if( !reg.test( value ) ){
+                callback( new Error('邮箱格式有误') );
             } else {
-                if ( this.ruleForm.checkPass !== '' ) {
-                        this.$refs.ruleForm.validateField('checkPass');
-                    }
-                callback();
+                callback()
             }
         };
-        var validatePass2 = (rule, value, callback) => {
+        var validatepswd = (rule, value, callback) => {
+            let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/;
             if ( value === '' ) {
                 callback( new Error('请输入密码') );
+            } else if( reg.test(value) ){
+                callback(  )
             } else {
-                callback();
+                callback( new Error('密码为6-20位或密码过于简单') );
             }
       };
         return {
             labelPosition: 'top',
             ruleForm: {
-                pass: '',
-                checkPass: '',
-                age: ''
+                username: '',
+                password: '',
+                vilecode: ''
             },
             rules: {
-                pass: [
-                    { validator: validatePass, trigger: 'blur' }
+                username: [
+                    { validator: validateuser, trigger: 'blur' }
                 ],
-                checkPass: [
-                    { validator: validatePass2, trigger: 'blur' }
+                password: [
+                    { validator: validatepswd, trigger: 'blur' }
                 ],
-                age: [
-                    { validator: checkAge, trigger: 'blur' }
+                vilecode: [
+                    { validator: validatevcde, trigger: 'blur' }
                 ]
             }
         };
     },
     methods: {
         submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-            if (valid) {
-                alert('submit!');
-            } else {
-                console.log('error submit!!');
-                return false;
-            }
+        this.$refs[formName].validate( (valid) => {
+                if (valid) {
+                    alert('submit!');
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
             });
-        },
-        resetForm(formName) {
-            this.$refs[formName].resetFields();
         }
     }
 };
@@ -102,7 +102,6 @@ export default {
     .content{
         margin: 0 auto;
         width: 330px;
-        height: 365px;
         .demo-ruleForm{
             width: 100%;
             height: 100%;

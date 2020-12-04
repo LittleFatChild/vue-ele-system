@@ -25,7 +25,8 @@ module.exports = {
                '.vue'
            ],
            alias: {
-               "@c": path.resolve( __dirname, "./src/components" )//绝对路径
+               "@c": path.resolve( __dirname, "./src/components" ),//绝对路径
+               "@" : path.resolve( __dirname, "./src")
            }
        } 
     }
