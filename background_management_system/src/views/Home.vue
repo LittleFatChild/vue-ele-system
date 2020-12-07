@@ -41,7 +41,7 @@
 <script>
 // @ is an alias to /src
 import Rxg from '../utils/validdate.js';
-import { ref, reactive, onMounted, inject } from '@vue/composition-api';
+import { ref, reactive, onMounted, inject, computed } from '@vue/composition-api';
 import { get_code } from '@/api/login.js';
 import { message } from 'element-ui';
 
@@ -69,7 +69,11 @@ export default{
         const isSendEnabled = ref(false);
         const code = ref('发送验证码');
         const sure = ref('');
-        const timer_delay = ref(null)
+        const states_username = ref(false);
+        const states_passwold = ref(false);
+        const states_checkpsd = ref(false);
+        const timer_delay = ref(null);
+        let timerSend = ref(null);
         const list = reactive([
             { id: 232526, name: '登录', fig: true, type: 'login'},
             { id: 232527, name: '注册', fig: false, type: 'register'}
@@ -106,19 +110,25 @@ export default{
             value = Rxg.iVp( value, 'email' );
             ruleForm.username = value;
             if ( value === '' ) {
+                states_username.value = false;
                 callback( new Error('请输入邮箱') );
             } else if( Rxg.gU( value ) ){
+                states_username.value = false;
                 callback( new Error('邮箱格式有误') );
             } else {
+                states_username.value = true;
                 callback()
             }
         } );
         let validatepswd = ( ( rule, value, callback ) => {
             if ( value === '' ) {
+                states_passwold.value = false;
                 callback( new Error('请输入密码') );
             } else if( Rxg.gP(value) ){
+                states_passwold.value = true;
                 callback(  )
             } else {
+                states_passwold.value = false;
                 callback( new Error('密码为6-20位或密码过于简单') );
             }
         } );
@@ -127,10 +137,13 @@ export default{
                 return callback();
             }
             if( value === ''){
+                states_checkpsd.value = false
                 callback( new Error('请再次输入密码') );
             } else if( ruleForm.password === value ){
+                states_checkpsd.value = true
                 callback()
             } else {
+                states_checkpsd.value = false
                 callback( new Error('两次输入的密码不一致') )
             }
         } );
@@ -154,15 +167,16 @@ export default{
             item.fig = true;
             isShow.value = list[1].fig;
             isenabled.value = true;
-            code.value = '发送验证码'
+            code.value = '发送验证码';
+            clearTimeout(timer_delay.value);
+            clearInterval(timerSend.value);
             context.refs['ruleForm'].resetFields(); //切换内容清空
         } );
 
         const sendrule = ( () => {
             if( isShow.value ){
-                if( ruleForm.username == '' || ruleForm.password == '' || ruleForm.checkpsw == '' ){
-                    context.root.$message.error( '邮箱或密码为空' );
-                    return false;
+                if( !( states_username.value && states_passwold.value && states_checkpsd.value ) ){
+                    return validates();
                 }
                 code.value = '发送中';
                 timer_delay.value = setTimeout(() => {
@@ -175,22 +189,20 @@ export default{
                         context.root.$message.success( res.data.message );
                         sure.value = res.data.message.substr(11);
                         isSendEnabled.value = !isSendEnabled.value;
-                        let timerSend = null;
-                        let t = 5;
+                        let t = 60;
                         isenabled.value = false 
                         timerSend = setInterval(() => {
                             t--;
                             code.value = '重新发送('+t+')'
                             if( t <= 0 ){
                                 code.value = '重新发送';
-                                clearInterval(timerSend);
-                                timerSend = null;
+                                clearInterval(timerSend.value);
+                                timerSend.value = null;
                                 isSendEnabled.value = !isSendEnabled.value;
                             }
                         }, 1000);
                     } , rej => {
                         console.log( rej );
-                        context.root.$message.error( '邮箱不存在' );
                         return false
                     }).catch( err => {
                         console.log( 'Its error',err);
@@ -199,9 +211,8 @@ export default{
                     clearTimeout(timer_delay.value)
                 }, 1200);
             }else{
-                if( ruleForm.username == '' || ruleForm.password == '' ){
-                    context.root.$message.error( '邮箱或密码为空' );
-                    return false;
+                if( !(states_username.value && states_passwold.value) ){
+                    return validates();
                 }
                 code.value = '发送中';
                 isSendEnabled.value = !isSendEnabled.value;
@@ -214,22 +225,23 @@ export default{
                     get_code( 'post', '/getSms/',data).then( res => {
                         context.root.$message.success( res.data.message );
                         sure.value = res.data.message.substr(11);
-                        let timerSend = null;
-                        let t = 5
+                        let t = 60;
                         isenabled.value = false 
                         timerSend = setInterval(() => {
                             t--;
                             code.value = '重新发送('+t+')'
                             if( t <= 0 ){
                                 code.value = '重新发送';
-                                clearInterval(timerSend);
-                                timerSend = null;
+                                clearInterval(timerSend.value);
+                                timerSend.value = null;
                                 isSendEnabled.value = !isSendEnabled.value;
                             }
                         }, 1000);
                     } , rej => {
                         console.log( rej );
-                        context.root.$message.error( '邮箱已存在' );
+                        // code.value = '重新发送';
+                        // clearInterval(timerSendvalue.value);
+                        // isSendEnabled.value = !isSendEnabled.value;
                         return false
                     }).catch( err => {
                         console.log( 'Its error',err);
@@ -251,12 +263,13 @@ export default{
                         code: ruleForm.vilecode,
                     }
                     get_code( 'post', '/register/', data).then( res => {
-                        context.root.$message.success( '注册成功' );
-                        code.value = '发送验证码'
-                        isenabled.value = false 
+                        context.root.$message.success( res.data.message );//注册成功
+                        code.value = '发送验证码';
+                        isActive( list[0] )
+                        isenabled.value = false ;
                     } , rej => {
                         console.log( rej );
-                        context.root.$message.error( '账户已经存在' );
+                        // context.root.$message.error( '账户已经存在' );
                         return false
                     }).catch( err => {
                         console.log( 'Its error',err);
@@ -280,15 +293,15 @@ export default{
                     }
                     get_code( 'post', '/login/', data).then( res => {
                         console.log(res)
-                        context.root.$message.success( '登录成功' );
+                        context.root.$message.success( res.data.message );
                         context.parent.$el.children[0].style.display = 'none';
                         let npage = context.root.$router.push({
                             path: 'Homepage',
                         })
-                        window.open( npage.herf, '_self' );
                         isenabled.value = false;
+                        window.open( npage.herf, '_self' );
                     } , rej => {
-                        context.root.$message.error( '用户名或密码错误' );
+                        // context.root.$message.error( '用户名或密码错误' );
                         console.log( rej );
                         return false
                     }).catch( err => {
@@ -306,7 +319,36 @@ export default{
             }
         } )
         
-        
+    //----------------------------------------------------------Auxiliary----------------------------------------------------------
+        const validates = () =>{
+            if( isShow.value ){
+                const _filed = [
+                    { filed: 'username',flag: states_username.value, alt:'用户名格式错误' },
+                    { filed: 'password',flag: states_passwold.value, alt:'密码格式错误' },
+                    { filed: 'checkpsw',flag: states_checkpsd.value, alt:'重复密码错误' }
+                ].every( (item) => {
+                    if( !item.flag ){
+                        context.root.$message.error( item.alt );
+                        return false;
+                    }
+                    return true
+                })
+                return _filed;
+            }else{
+                const _filed = [
+                    { filed: 'username',flag: states_username.value, alt:'用户名格式错误' },
+                    { filed: 'password',flag: states_passwold.value, alt:'密码格式错误' },
+                ].every( (item) => {
+                    if( !item.flag ){
+                        context.root.$message.error( item.alt );
+                        return false;
+                    }
+                    return true
+                })
+                return _filed;
+            }
+        }
+
         return {
             isShow,
             list,
