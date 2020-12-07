@@ -26,12 +26,12 @@
                             <el-input id="code" v-model="ruleForm.vilecode" class="ruleofinp"></el-input>
                         </el-col>
                         <el-col :span="8">
-                            <el-button type="primary" class="sendrule">发送验证码</el-button>
+                            <el-button type="primary" class="sendrule" @click="sendrule" :disabled="isSendEnabled">{{ code }}</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="danger" @click="submitForm('ruleForm')" class="signit">{{ !isShow ? '登录':'注册'}}</el-button>
+                    <el-button type="danger" @click="submitForm('ruleForm')" class="signit" :disabled="isenabled" >{{ !isShow ? '登录':'注册'}}</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -41,25 +41,34 @@
 <script>
 // @ is an alias to /src
 import Rxg from '../utils/validdate.js';
-import { ref, reactive, onMounted } from '@vue/composition-api';
-import { get_code } from '@/api/login.js'
+import { ref, reactive, onMounted, inject } from '@vue/composition-api';
+import { get_code } from '@/api/login.js';
+import { message } from 'element-ui';
 
 //----------------------------------------------------------------------------Vue3.0-----------------------------------------------------------------------------------------
 export default{
     setup( prop, context ){
     //------------------------------------------------data-------------------------------------------
         onMounted( () => {
-            // console.log('====>>>>',process.env.NODE_ENV)
-            get_code( 'get', {
-                firstName: 'Fred',
-                lastName: 'Flsas'
-            }).then( res => {
+        //     // console.log('====>>>>',process.env.NODE_ENV)
+        //     get_code( 
+        //         'post', 
+        //         'url',
+        //         {
+        //         firstName: 'Fred',
+        //         lastName: 'Flsas'
+        //     }).then( res => {
 
-            }).catch( err => {
-                console.log('====>>>>',err)
-            })
+        //     }).catch( err => {
+        //         //console.log('====>>>>',err)
+        //     })
         });
+       
         const isShow = ref(false);
+        const isenabled = ref(true);
+        const isSendEnabled = ref(false);
+        const code = ref('发送验证码');
+        const sure = ref('');
         const list = reactive([
             { id: 232526, name: '登录', fig: true, type: 'login'},
             { id: 232527, name: '注册', fig: false, type: 'register'}
@@ -69,7 +78,7 @@ export default{
             username: '',
             password: '',
             vilecode: '',
-            checkpsw: ''
+            checkpsw: '',
         });
         
     //------------------------------------------------methods-------------------------------------------
@@ -82,6 +91,9 @@ export default{
                 setTimeout( () => {
                     if ( Rxg.gC(value) ) {
                         callback( new Error('验证码为六位字符') );
+                    } else if( sure.value !== ruleForm.vilecode ){
+                        context.root.$message.error( '验证码错误' );
+                        callback( new Error('验证码错误') );
                     } else {
                         callback();
                     }
@@ -135,50 +147,167 @@ export default{
             ]
         })
 
-        const  isActive = ( (item) => {
+        const isActive = ( (item) => {
             list.map (item => item.fig = false);
             item.fig = true;
             isShow.value = list[1].fig;
+            isenabled.value = true;
+            code.value = '发送验证码'
+            context.refs['ruleForm'].resetFields(); //切换内容清空
         } );
+
+        const sendrule = ( () => {
+            if( isShow.value ){
+                if( ruleForm.username == '' || ruleForm.password == '' || ruleForm.checkpsw == '' ){
+                    context.root.$message.error( '邮箱或密码为空' );
+                    return false;
+                }
+                const data = {
+                    username: ruleForm.username,
+                    password: ruleForm.password,
+                    module: !isShow.value ? 'login' : 'register'
+                }
+                get_code( 'post', '/getSms/',data).then( res => {
+                    context.root.$message.success( res.data.message );
+                    sure.value = res.data.message.substr(11);
+                    isSendEnabled.value = !isSendEnabled.value;
+                    let timerSend = null;
+                    let t = 5
+                    isenabled.value = false 
+                    timerSend = setInterval(() => {
+                        t--;
+                        code.value = '发送中('+t+')'
+                        if( t <= 0 ){
+                            code.value = '重新发送';
+                            clearInterval(timerSend);
+                            timerSend = null;
+                            isSendEnabled.value = !isSendEnabled.value;
+                        }
+                    }, 1000);
+                } , rej => {
+                    console.log( rej );
+                    context.root.$message.error( '邮箱不存在' );
+                    return false
+                }).catch( err => {
+                    console.log( 'Its error',err);
+                    return false
+                });
+            }else{
+                if( ruleForm.username == '' || ruleForm.password == '' ){
+                    context.root.$message.error( '邮箱或密码为空' );
+                    return false;
+                }
+                const data = {
+                    username: ruleForm.username,
+                    password: ruleForm.password,
+                    module: !isShow.value ? 'login' : 'register'
+                }
+                get_code( 'post', '/getSms/',data).then( res => {
+                    context.root.$message.success( res.data.message );
+                    sure.value = res.data.message.substr(11);
+                    isSendEnabled.value = !isSendEnabled.value;
+                    let timerSend = null;
+                    let t = 5
+                    isenabled.value = false 
+                    timerSend = setInterval(() => {
+                        t--;
+                        code.value = '发送中('+t+')'
+                        if( t <= 0 ){
+                            code.value = '重新发送';
+                            clearInterval(timerSend);
+                            timerSend = null;
+                            isSendEnabled.value = !isSendEnabled.value;
+                        }
+                    }, 1000);
+                } , rej => {
+                    console.log( rej );
+                    context.root.$message.error( '邮箱已存在' );
+                    return false
+                }).catch( err => {
+                    console.log( 'Its error',err);
+                    return false
+                });
+            } 
+        } )
+
         const submitForm = ( (formName) => {
             if( isShow.value ){
                 context.refs[formName].validate( (valid) => {
                 if( valid ){
-                    alert('register');
-                    let obj = {
-                        id: new Date().getTime(),
+                    isenabled.value = true;
+                    let data = {
                         username: ruleForm.username,
                         password: ruleForm.password,
+                        code: ruleForm.vilecode,
                     }
-                    context.store.commit('increment',obj);
-                    } else {
+                    get_code( 'post', '/register/', data).then( res => {
+                        context.root.$message.success( '注册成功' );
+                        code.value = '发送验证码'
+                        isenabled.value = false 
+                    } , rej => {
+                        console.log( rej );
+                        context.root.$message.error( '账户已经存在' );
+                        return false
+                    }).catch( err => {
+                        console.log( 'Its error',err);
+                        return false
+                    });
+                    context.refs['ruleForm'].resetFields();
+                } else {
                         console.log('error register');
+                        console.log(valid);
                         return false
                     }
                 })
             }else{
                 context.refs[formName].validate( (valid) => {
                     if (valid) {
-                        alert('submit!');
+                        isenabled.value = true;
+                    let data = {
+                        username: ruleForm.username,
+                        password: ruleForm.password,
+                        code: ruleForm.vilecode,
+                    }
+                    get_code( 'post', '/login/', data).then( res => {
+                        console.log(res)
+                        context.root.$message.success( '登录成功' );
+                        context.parent.$el.children[0].style.display = 'none';
+                        let npage = context.root.$router.push({
+                            path: 'Homepage',
+                        })
+                        window.open( npage.herf, '_self' );
+                        isenabled.value = false;
+                    } , rej => {
+                        context.root.$message.error( '用户名或密码错误' );
+                        console.log( rej );
+                        return false
+                    }).catch( err => {
+                        console.log( 'Its error',err);
+                        return false
+                    });
+                    context.refs['ruleForm'].resetFields();
                     } else {
                         console.log('error submit!!');
                         console.log(valid)
                         return false;
                     }
+                    context.refs['ruleForm'].resetFields();
                 });
             }
         } )
+        
+        
         return {
             isShow,
             list,
             ruleForm,
             rules,
-            validatevcde,
-            validateuser,
-            validatepswd,
-            vaildatechps,
             isActive,
-            submitForm
+            submitForm,
+            sendrule,
+            isenabled,
+            isSendEnabled,
+            code
         }
     }
 }

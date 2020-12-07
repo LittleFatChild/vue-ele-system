@@ -3,7 +3,7 @@
 */ 
 const validate_inputValue = ( value, type) => {
     if( type == 'email'){
-        var pattern = new RegExp("[`%~!#$^&*()=|{}':;',\\[\\].<>/?~！#￥……&*（）&;—|{}【】‘；：”“'。，、？]")
+        var pattern = new RegExp("[`%~!#$^&*()=|{}':;',\\[\\]<>/?~！#￥……&*（）&;—|{}【】‘；：”“'。，、？]")
     }else{
         var pattern = new RegExp("[`%~!#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）&;—|{}【】‘；：”“'。，、？.]")
     }

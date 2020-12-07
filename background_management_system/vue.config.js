@@ -1,7 +1,8 @@
 const path = require("path");
 // console.log( path.resolve( __dirname, "./src/components") )
 module.exports = {
-    
+    //基本路径
+    //publicPath: process.env.NODE_ENV=='production' :
     // 语法检测
     lintOnSave: false,
     css: {
@@ -26,8 +27,25 @@ module.exports = {
            ],
            alias: {
                "@c": path.resolve( __dirname, "./src/components" ),//绝对路径
-               "@" : path.resolve( __dirname, "./src")
+               "@" : path.resolve( __dirname, "./src"),
+               vue$: 'vue/dist/vue.esm.js'
            }
        } 
+    },
+    //代理
+    devServer:{
+        port: 8000,
+        //logLevel: 'debug',
+        open: true,//启动项目自动打开浏览器
+        proxy:{
+            '/api': {
+                target: 'http://www.web-jshtml.cn/productapi/',//目标接口
+                //重写url
+                changeOrigin: true, //是否跨域//不写等于上下白写
+                pathRewrite: {
+                    '^/api': ''
+                }
+            }
+        }
     }
 }
