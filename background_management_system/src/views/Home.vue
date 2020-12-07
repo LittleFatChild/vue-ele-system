@@ -69,6 +69,7 @@ export default{
         const isSendEnabled = ref(false);
         const code = ref('发送验证码');
         const sure = ref('');
+        const timer_delay = ref(null)
         const list = reactive([
             { id: 232526, name: '登录', fig: true, type: 'login'},
             { id: 232527, name: '注册', fig: false, type: 'register'}
@@ -80,6 +81,7 @@ export default{
             vilecode: '',
             checkpsw: '',
         });
+
         
     //------------------------------------------------methods-------------------------------------------
         let validatevcde = ( ( rule, value, callback ) => {
@@ -162,71 +164,79 @@ export default{
                     context.root.$message.error( '邮箱或密码为空' );
                     return false;
                 }
-                const data = {
-                    username: ruleForm.username,
-                    password: ruleForm.password,
-                    module: !isShow.value ? 'login' : 'register'
-                }
-                get_code( 'post', '/getSms/',data).then( res => {
-                    context.root.$message.success( res.data.message );
-                    sure.value = res.data.message.substr(11);
-                    isSendEnabled.value = !isSendEnabled.value;
-                    let timerSend = null;
-                    let t = 5
-                    isenabled.value = false 
-                    timerSend = setInterval(() => {
-                        t--;
-                        code.value = '发送中('+t+')'
-                        if( t <= 0 ){
-                            code.value = '重新发送';
-                            clearInterval(timerSend);
-                            timerSend = null;
-                            isSendEnabled.value = !isSendEnabled.value;
-                        }
-                    }, 1000);
-                } , rej => {
-                    console.log( rej );
-                    context.root.$message.error( '邮箱不存在' );
-                    return false
-                }).catch( err => {
-                    console.log( 'Its error',err);
-                    return false
-                });
+                code.value = '发送中';
+                timer_delay.value = setTimeout(() => {
+                    const data = {
+                        username: ruleForm.username,
+                        password: ruleForm.password,
+                        module: !isShow.value ? 'login' : 'register'
+                    }
+                    get_code( 'post', '/getSms/',data).then( res => {
+                        context.root.$message.success( res.data.message );
+                        sure.value = res.data.message.substr(11);
+                        isSendEnabled.value = !isSendEnabled.value;
+                        let timerSend = null;
+                        let t = 5;
+                        isenabled.value = false 
+                        timerSend = setInterval(() => {
+                            t--;
+                            code.value = '重新发送('+t+')'
+                            if( t <= 0 ){
+                                code.value = '重新发送';
+                                clearInterval(timerSend);
+                                timerSend = null;
+                                isSendEnabled.value = !isSendEnabled.value;
+                            }
+                        }, 1000);
+                    } , rej => {
+                        console.log( rej );
+                        context.root.$message.error( '邮箱不存在' );
+                        return false
+                    }).catch( err => {
+                        console.log( 'Its error',err);
+                        return false
+                    });
+                    clearTimeout(timer_delay.value)
+                }, 1200);
             }else{
                 if( ruleForm.username == '' || ruleForm.password == '' ){
                     context.root.$message.error( '邮箱或密码为空' );
                     return false;
                 }
-                const data = {
-                    username: ruleForm.username,
-                    password: ruleForm.password,
-                    module: !isShow.value ? 'login' : 'register'
-                }
-                get_code( 'post', '/getSms/',data).then( res => {
-                    context.root.$message.success( res.data.message );
-                    sure.value = res.data.message.substr(11);
-                    isSendEnabled.value = !isSendEnabled.value;
-                    let timerSend = null;
-                    let t = 5
-                    isenabled.value = false 
-                    timerSend = setInterval(() => {
-                        t--;
-                        code.value = '发送中('+t+')'
-                        if( t <= 0 ){
-                            code.value = '重新发送';
-                            clearInterval(timerSend);
-                            timerSend = null;
-                            isSendEnabled.value = !isSendEnabled.value;
-                        }
-                    }, 1000);
-                } , rej => {
-                    console.log( rej );
-                    context.root.$message.error( '邮箱已存在' );
-                    return false
-                }).catch( err => {
-                    console.log( 'Its error',err);
-                    return false
-                });
+                code.value = '发送中';
+                isSendEnabled.value = !isSendEnabled.value;
+                timer_delay.value = setTimeout(() => {
+                    const data = {
+                        username: ruleForm.username,
+                        password: ruleForm.password,
+                        module: !isShow.value ? 'login' : 'register'
+                    }
+                    get_code( 'post', '/getSms/',data).then( res => {
+                        context.root.$message.success( res.data.message );
+                        sure.value = res.data.message.substr(11);
+                        let timerSend = null;
+                        let t = 5
+                        isenabled.value = false 
+                        timerSend = setInterval(() => {
+                            t--;
+                            code.value = '重新发送('+t+')'
+                            if( t <= 0 ){
+                                code.value = '重新发送';
+                                clearInterval(timerSend);
+                                timerSend = null;
+                                isSendEnabled.value = !isSendEnabled.value;
+                            }
+                        }, 1000);
+                    } , rej => {
+                        console.log( rej );
+                        context.root.$message.error( '邮箱已存在' );
+                        return false
+                    }).catch( err => {
+                        console.log( 'Its error',err);
+                        return false
+                    });
+                clearTimeout(timer_delay.value)
+                }, 1200);
             } 
         } )
 
