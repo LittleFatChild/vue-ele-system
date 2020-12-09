@@ -48,8 +48,8 @@ import { message } from 'element-ui';
 //----------------------------------------------------------------------------Vue3.0-----------------------------------------------------------------------------------------
 export default{
     setup( prop, context ){
-    //------------------------------------------------data-------------------------------------------
-        onMounted( () => {
+    //-------------------------------------------------------------------------data-----------------------------------------------------------------------------------------
+        // onMounted( () => {
         //     // console.log('====>>>>',process.env.NODE_ENV)
         //     get_code( 
         //         'post', 
@@ -62,7 +62,7 @@ export default{
         //     }).catch( err => {
         //         //console.log('====>>>>',err)
         //     })
-        });
+        // });
        
         const isShow = ref(false);
         const isenabled = ref(true);
@@ -85,9 +85,7 @@ export default{
             vilecode: '',
             checkpsw: '',
         });
-
-        
-    //------------------------------------------------methods-------------------------------------------
+    //---------------------------------------------------------------------------methods--------------------------------------------------------
         let validatevcde = ( ( rule, value, callback ) => {
             value = Rxg.iVp( value );
             ruleForm.vilecode = value;
@@ -161,18 +159,21 @@ export default{
                 { validator: validatevcde, trigger: 'blur' }
             ]
         })
-
+        //  切换事件
         const isActive = ( (item) => {
             list.map (item => item.fig = false);
             item.fig = true;
             isShow.value = list[1].fig;
             isenabled.value = true;
             code.value = '发送验证码';
-            clearTimeout(timer_delay.value);
+            clearTimeout(timer_delay.value);    
             clearInterval(timerSend.value);
+            timer_delay.value = null;
+            timerSend.value = null;
+            isSendEnabled.value = false;
             context.refs['ruleForm'].resetFields(); //切换内容清空
         } );
-
+        //  验证码事件
         const sendrule = ( () => {
             if( isShow.value ){
                 if( !( states_username.value && states_passwold.value && states_checkpsd.value ) ){
@@ -191,7 +192,7 @@ export default{
                         isSendEnabled.value = !isSendEnabled.value;
                         let t = 60;
                         isenabled.value = false 
-                        timerSend = setInterval(() => {
+                        timerSend.value = setInterval(() => {
                             t--;
                             code.value = '重新发送('+t+')'
                             if( t <= 0 ){
@@ -227,7 +228,7 @@ export default{
                         sure.value = res.data.message.substr(11);
                         let t = 60;
                         isenabled.value = false 
-                        timerSend = setInterval(() => {
+                        timerSend.value = setInterval(() => {
                             t--;
                             code.value = '重新发送('+t+')'
                             if( t <= 0 ){
@@ -251,7 +252,7 @@ export default{
                 }, 1200);
             } 
         } )
-
+        //  提交注册事件
         const submitForm = ( (formName) => {
             if( isShow.value ){
                 context.refs[formName].validate( (valid) => {
@@ -296,7 +297,7 @@ export default{
                         context.root.$message.success( res.data.message );
                         context.parent.$el.children[0].style.display = 'none';
                         let npage = context.root.$router.push({
-                            path: 'Homepage',
+                            path: '/home/Homepage',
                         })
                         isenabled.value = false;
                         window.open( npage.herf, '_self' );
@@ -319,7 +320,8 @@ export default{
             }
         } )
         
-    //----------------------------------------------------------Auxiliary----------------------------------------------------------
+    //------------------------------------------------------------------------Auxiliary-------------------------------------------------------------
+        // 获取验证码, 验证属性
         const validates = () =>{
             if( isShow.value ){
                 const _filed = [
