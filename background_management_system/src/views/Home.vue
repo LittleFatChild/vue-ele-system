@@ -295,7 +295,7 @@ export default{
                     get_code( 'post', '/login/', data).then( res => {
                         console.log(res)
                         context.root.$message.success( res.data.message );
-                        context.parent.$el.children[0].style.display = 'none';
+                        // context.parent.$el.children[0].style.display = 'none';
                         let npage = context.root.$router.push({
                             path: '/home/Homepage',
                         })

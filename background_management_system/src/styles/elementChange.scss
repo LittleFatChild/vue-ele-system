@@ -1,0 +1,16 @@
+.el-submenu .el-menu-item {
+    font-size: 10px;
+    &.is-active{
+        background-color: $Menu_2;
+        color: #fff;
+    }
+}
+
+// li.el-submenu{
+//     .el-submenu.is-active.is-opened{
+//         .el-submenu__title{
+//              background-color:$Menu_1;
+//         }
+       
+//     }
+// }
