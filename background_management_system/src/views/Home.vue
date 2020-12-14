@@ -42,7 +42,7 @@
 // @ is an alias to /src
 import Rxg from '../utils/validdate.js';
 import { ref, reactive, onMounted, inject, computed } from '@vue/composition-api';
-import { get_code } from '@/api/login.js';
+import aj from '@/api/login.js';
 import { message } from 'element-ui';
 
 //----------------------------------------------------------------------------Vue3.0-----------------------------------------------------------------------------------------
@@ -186,7 +186,7 @@ export default{
                         password: ruleForm.password,
                         module: !isShow.value ? 'login' : 'register'
                     }
-                    get_code( 'post', '/getSms/',data).then( res => {
+                    aj.get_code( 'post', '/getSms/',data).then( res => {
                         context.root.$message.success( res.data.message );
                         sure.value = res.data.message.substr(11);
                         isSendEnabled.value = !isSendEnabled.value;
@@ -223,7 +223,7 @@ export default{
                         password: ruleForm.password,
                         module: !isShow.value ? 'login' : 'register'
                     }
-                    get_code( 'post', '/getSms/',data).then( res => {
+                    aj.get_code( 'post', '/getSms/',data).then( res => {
                         context.root.$message.success( res.data.message );
                         sure.value = res.data.message.substr(11);
                         let t = 60;
@@ -252,7 +252,7 @@ export default{
                 }, 1200);
             } 
         } )
-        //  提交注册事件
+        //  登录注册事件
         const submitForm = ( (formName) => {
             if( isShow.value ){
                 context.refs[formName].validate( (valid) => {
@@ -263,7 +263,7 @@ export default{
                         password: ruleForm.password,
                         code: ruleForm.vilecode,
                     }
-                    get_code( 'post', '/register/', data).then( res => {
+                    aj.get_code( 'post', '/register/', data).then( res => {
                         context.root.$message.success( res.data.message );//注册成功
                         code.value = '发送验证码';
                         isActive( list[0] )
@@ -290,25 +290,23 @@ export default{
                     let data = {
                         username: ruleForm.username,
                         password: ruleForm.password,
-                        code: ruleForm.vilecode,
+                        code: ruleForm.vilecode,//sure.value,
                     }
-                    get_code( 'post', '/login/', data).then( res => {
-                        console.log(res)
+                    context.root.$store.dispatch('app/login',data).then( res => {
+                        console.log( res );
                         context.root.$message.success( res.data.message );
-                        // context.parent.$el.children[0].style.display = 'none';
                         let npage = context.root.$router.push({
                             path: '/home/Homepage',
                         })
                         isenabled.value = false;
                         window.open( npage.herf, '_self' );
-                    } , rej => {
-                        // context.root.$message.error( '用户名或密码错误' );
+                    }, rej => {
                         console.log( rej );
-                        return false
-                    }).catch( err => {
-                        console.log( 'Its error',err);
-                        return false
-                    });
+                        return false;
+                    } ).catch( err => {
+                        console.log( err );
+                        return false;
+                    } )
                     context.refs['ruleForm'].resetFields();
                     } else {
                         console.log('error submit!!');
@@ -487,7 +485,7 @@ export default{
 
 <style lang="scss" scoped>
 .home{
-    height: 100vh;
+    height: 78.5vh;
     width: 100%;
     background-color: #344A5F;
     padding-top: 200px;

@@ -51,7 +51,7 @@ module.exports = {
         open: true,//启动项目自动打开浏览器
         proxy:{
             '/api': {
-                target: 'http://www.web-jshtml.cn/productapi/',//目标接口
+                target: 'http://www.web-jshtml.cn/productapi/token/',//目标接口
                 //重写url
                 changeOrigin: true, //是否跨域//不写等于上下白写
                 pathRewrite: {

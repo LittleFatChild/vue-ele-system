@@ -4,10 +4,10 @@
             <svg-icon iconName="menu"></svg-icon>
         </div>
         <div class="pull-right">
-            <div class="uerinfo">
-                <!-- <img src="../../../assets" alt=""> -->
+            <div class="userinfo">
+                <img src="../../assets/touxiang.jpg" alt="">
             </div>
-            <div class="header-icon">
+            <div class="header-icon" @click="exit">
                 <svg-icon iconName="exit" className="exit"></svg-icon>
             </div>
         </div>
@@ -21,9 +21,18 @@ export default {
         const toggleMenu = ( () => { 
             context.root.$store.commit('app/SET_COLLAPSE');
          } )
-         return {
-            toggleMenu
-         }
+        const exit = ( () => {
+            context.root.$store.dispatch('app/exit').then( res => {
+                context.root.$router.push({
+                    name: 'Home'
+                })
+            } )
+            context.root.$router.push()
+        } )
+        return {
+            toggleMenu,
+            exit
+        }
     }
 }
 </script>
@@ -36,6 +45,7 @@ export default {
         right: 0;
         height: $LayoutHeader;
         .header-icon{
+            display: inline-block;
             padding: 22px 30px;
             svg{
                 font-size: 20px;
@@ -45,12 +55,12 @@ export default {
             height: 100%;
             padding: 0 32px;
             border-right: 1px solid #ccc;
-            background-color: red;
+            float: left;
+            margin-top: 20px;
             img{
                 width: 35px;
                 height: 35px;
                 display: inline-block;
-                margin-top: 20px;
                 margin-right: 20px;
                 border-radius: 50%;
             }
