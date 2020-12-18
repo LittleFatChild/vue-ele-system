@@ -44,6 +44,8 @@ export default {
         left:$Navwidth;
         right: 0;
         height: $LayoutHeader;
+        white-space: nowrap;
+        overflow: hidden;
         .header-icon{
             display: inline-block;
             padding: 22px 30px;

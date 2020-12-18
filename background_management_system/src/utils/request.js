@@ -29,12 +29,12 @@ http.interceptors.request.use(function (config) {
 
 // 添加响应头拦截
 http.interceptors.response.use(function (response){
-    console.log(response);
+    // console.log(response);
     if ( response.data.resCode != 0) {
         Message.error( response.data.message );
         // console.log('响应拦截');
-        console.log(response.data );
-        // console.log(response)
+        // console.log(response.data );
+        console.log(response)
         return response(error)
     }
     return response;

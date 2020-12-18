@@ -7,7 +7,7 @@
             <!-- <el-radio-button :label="false">展开</el-radio-button>
             <el-radio-button :label="true">收起</el-radio-button> -->
         <!-- </el-radio-group> -->
-        <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" :collapse="isCollapse" background-color="#344a5f" text-color="#ffffff">
+        <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" :collapse="isCollapse" background-color="#344a5f" text-color="#ffffff" router>
             <template v-for="(item,index) in routes">
                 <el-submenu :index="item.path"  :key="index" v-if="!item.hidden">
                     <template slot="title" >
@@ -82,25 +82,4 @@ export default {
         border: 0;
     }
 }
-
-.open{
-    #nav-warp{
-        width: $Navwidth;
-    }
-}
-
-.close{
-    #nav-warp{
-        width: 64px;
-    }
-    .logo {
-        // padding: 28px;
-        text-align: center;
-        padding: 28px 0 !important;
-        img{
-            width: 30px;;
-        }
-    }
-}
-
 </style>

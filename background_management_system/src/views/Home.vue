@@ -293,7 +293,6 @@ export default{
                         code: ruleForm.vilecode,//sure.value,
                     }
                     context.root.$store.dispatch('app/login',data).then( res => {
-                        console.log( res );
                         context.root.$message.success( res.data.message );
                         let npage = context.root.$router.push({
                             path: '/home/Homepage',

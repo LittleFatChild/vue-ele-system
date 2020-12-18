@@ -15,8 +15,15 @@ const get_login = ( data ) => {
         data: data//{ firstName: 'Fred',lastName: 'Flsas' }
     })
 }
-
+const get_list = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/getList/',
+        data: data
+    })
+}
 export default {
     get_code,
-    get_login
+    get_login,
+    gL: get_list
 }

@@ -34,3 +34,56 @@ li.el-submenu{
         background-color: $Menu_2;
     }
 }
+.open{
+    #nav-warp{
+        @include webkit( 'transition',all 0.3s ease 0s );
+        width: $Navwidth;
+    }
+    #head-warp{
+        @include webkit( 'transition',all 0.3s ease 0s );
+        left: $Navwidth;
+    }
+    #main-warp{
+        @include webkit( 'transition',all 0.3s ease 0s );
+        left: $Navwidth;
+    }
+}
+
+.close{
+    #nav-warp{
+        width: $Navwidth_close;
+    }
+    .logo {
+        // padding: 28px;
+        text-align: center;
+        padding: 28px 0 !important;
+        img{
+            width: 30px;;
+        }
+    }
+    #head-warp{
+        @include webkit( 'transition',all 0.3s ease 0s );
+        left: $Navwidth_close;
+    }
+    #main-warp{
+        @include webkit( 'transition',all 0.3s ease 0s );
+        left: $Navwidth_close;
+    }
+}
+.el-dialog__header{
+    padding: 20px 30px 10px !important;
+}
+.el-dialog__body{
+    padding: 30px 50px 20px !important;
+}
+.el-dialog__footer{
+    text-align: center;
+    botton{
+        width: 100px !important;
+    }
+}
+
+
+.el-form-item{
+    margin-bottom: 22px !important;
+}

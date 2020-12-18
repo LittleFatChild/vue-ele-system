@@ -1,11 +1,30 @@
 @charset "UTF-8";
 
-// $bg: #ee6969;
+//定义动画
+@mixin webkit( $type, $value ) {
+    -webkit-#{$type}: $value;
+    -moz-#{$type}: $value;
+    -o-#{$type}: $value;
+    -ms-#{$type}: $value;
+}
 
-// body{
-//     background-color: $bg;
-// }
+//定义label和表单元素之间的位置
+@mixin labelDom ( $width,$align,$line-height,$font-size: 14 ){
+    label{
+        float: left;
+        width: $width+px;
+        text-align: $align;
+        line-height: $line-height+px;
+        font-size: $font-size+px;
+    }
+    .warp-content{
+        margin-left: $width+px;
+    }
+}
 
+.pull-right{ float: right }
+.pull-left{ float: left }
+.space-30 { margin-top: 30px }
 
 //重置浏览器默认样式配置
 @import './reset.scss';
@@ -14,12 +33,4 @@
 //子路由激活背景色修改
 @import './elementChange.scss';
 
-.pull-right{ float: right }
-.pull-left{ float: left }
-//定义动画
-@mixin webkit( $type, $value ) {
-    -webkit-#{$type}: $value;
-    -moz-#{$type}: $value;
-    -o-#{$type}: $value;
-    -ms-#{$type}: $value;
-}
+

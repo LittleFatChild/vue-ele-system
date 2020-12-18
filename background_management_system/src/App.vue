@@ -27,24 +27,7 @@ export default({
 </script>
 
 <style lang="scss">
-    #app {
-        // font-family: Avenir, Helvetica, Arial, sans-serif;
-        // width: 100%;
-        // height: 100%;
-        // overflow: hidden;
-    }
-
-    #nav {
-        // background-color: #344A5F;
-        // height: 0px;
-        // // margin: 0 auto;
-        // a {
-        //     font-weight: bold;
-        //     color: #F7FC4C;
-
-        //     &.router-link-active {
-        //         color: #42b983;
-        //     }
-        // }
+    #app{
+        height: auto;
     }
 </style>

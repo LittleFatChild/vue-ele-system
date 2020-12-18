@@ -32,10 +32,8 @@ const mutations = {
 
 const actions = {
     login( context, data ){
-        // console.log( data );
         return new Promise(( resolve, reject ) => {
             aj.get_login( data ).then( res => {
-                console.log(res);
                 let { username, token } = res.data.data;
                 context.commit('SET_USERNAME',username);
                 context.commit('SET_TOKEN',token);
