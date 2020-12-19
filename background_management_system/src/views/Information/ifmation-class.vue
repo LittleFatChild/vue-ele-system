@@ -6,16 +6,24 @@
         </div>
         <hr class="thought">
         <div class="class-warp">
-            <ul class="tree-list-tit">
-                <li v-for="item in data" :key="item.title">
-                    <p :class="item.fign? 'active' : '' " @click="openit(item)">{{ item.title }}</p>
-                    <ul class="tree-list-count" v-show="item.fign">
-                        <li v-for="itemchild in item.son_data" :key="itemchild.name">
-                            {{ itemchild.name }}
+            <el-row>
+                <el-col :span="12">
+                    <ul class="tree-list-tit">
+                        <li v-for="item in data" :key="item.title">
+                            <p :class="item.fign? 'active' : '' " @click="openit(item)">{{ item.title }}</p>
+                            <ul class="tree-list-count" v-show="item.fign">
+                                <li v-for="itemchild in item.son_data" :key="itemchild.name">
+                                    {{ itemchild.name }}
+                                </li>
+                            </ul>
                         </li>
                     </ul>
-                </li>
-            </ul>
+                </el-col>
+                <el-col :span="12">
+                    ooo
+                </el-col>
+            </el-row>
+            
         </div>
     </div>
 </template>
@@ -92,7 +100,8 @@ export default {
         }
         
         .thought{
-            border: 1px solid #e9e9e9;
+            border: none;
+            border-bottom: 1px solid #e9e9e9;
             margin-bottom: 28px;
         }
         

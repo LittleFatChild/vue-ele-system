@@ -80,10 +80,12 @@
   </div>
 </template>
 <script>
-import { ref , reactive , onMounted } from "@vue/composition-api";
+import { ref , reactive , onMounted, watch } from "@vue/composition-api";
 import AJAX from '../../api/login';
 import DialogNewly_list from './dialog/list-info';
-import DialongEdit from './dialog/list-edit'
+import DialongEdit from './dialog/list-edit';
+import confirm from '../../utils/helper';
+import global from '../../utils/global_3.0'
 export default {
     components: {
         DialogNewly_list,
@@ -167,23 +169,45 @@ export default {
             multipleSelection.value = val;
         };
         const handleDelete = ( index , row ) => {
-                root.$confirm( "此操作将永久删除该文件, 是否继续?", "提示", {
-                confirmButtonText: "确定",
-                cancelButtonText: "取消",
+            const callback = () =>{
+                console.log(111)
+            }
+            // confirm.confirm({
+            //     content: "此操作将永久删除该文件, 是否继续?",
+            //     top: "提示",
+            //     type: "warning",
+            //     center: true,
+            //     callback: callback
+            // })
+            // confirm.ProConfirm( {
+            //     content: "此操作将永久删除该文件, 是否继续?",
+            //     top: "提示",
+            //     type: "warning",
+            //     center: true,
+            //     callback: callback
+            // } ).then( res => {
+            //     return console.log( res );
+            // } ).catch( rej => {
+            //     return console.log( rej );
+            // })
+            // root.$confirm = ( {
+            //     content: "此操作将永久删除该文件, 是否继续?",
+            //     top: "提示",
+            //     type: "warning",
+            //     center: true,
+            //     callback: callback
+            // } )
+            const { str , confirm } = global()
+            confirm( { 
+                content: "此操作将永久删除该文件, 是否继续?",
+                top: "提示",
                 type: "warning",
                 center: true,
-            }).then(() => {
-                root.$message({
-                    type: "success",
-                    message: "删除成功!",
-                });
-                tableData.splice( index , 1 );
-            }).catch(() => {
-                root.$message({
-                    type: "info",
-                    message: "已取消删除",
-                });
-            });
+                callback: callback
+            } )
+            watch( () => str.value ,(value) => {
+                console.log('===>',value)
+            } )
         };
         const handleEdit = (bool) => {
             dialogFormVisible.value = bool;

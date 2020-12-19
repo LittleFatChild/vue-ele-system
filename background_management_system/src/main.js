@@ -8,13 +8,10 @@ import 'element-ui/lib/theme-chalk/index.css';
 import axios from 'axios';
 import VueCompositionApi from '@vue/composition-api';
 import './icons/';
+import global from './utils/global';
 // import 'default-passive-events';
-
-
-
-
-
 // import gbcss from "./styles/main.scss";
+Vue.use(global);
 Vue.use(ElementUI);
 Vue.use(VueCompositionApi);
 Vue.prototype.$http = axios
