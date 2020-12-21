@@ -240,9 +240,6 @@ export default{
                         }, 1000);
                     } , rej => {
                         console.log( rej );
-                        // code.value = '重新发送';
-                        // clearInterval(timerSendvalue.value);
-                        // isSendEnabled.value = !isSendEnabled.value;
                         return false
                     }).catch( err => {
                         console.log( 'Its error',err);
@@ -270,7 +267,6 @@ export default{
                         isenabled.value = false ;
                     } , rej => {
                         console.log( rej );
-                        // context.root.$message.error( '账户已经存在' );
                         return false
                     }).catch( err => {
                         console.log( 'Its error',err);

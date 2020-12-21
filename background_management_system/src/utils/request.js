@@ -12,18 +12,28 @@ const http = axios.create({ // http.defaults.baseURL = 'http://www.web-jshtml.cn
 })
 
 
+const whiteToken = [
+    '/login',
+    /register/,
+    '/getSms/'
+]
 // 添加请求头拦截
 http.interceptors.request.use(function (config) {
-    // console.log('请求拦截');
-    // console.log( config )
-//    console.log( config )
-    if(ck.gT()){
-        config.headers.token = ck.gT();
-    }
     // console.log(config)
-    return config;
+    if( whiteToken.indexOf(config.url) !== -1 ){
+        return config;
+    } else {
+        if( ck.gT() ){
+            config.headers.Tokey = ck.gT();
+            config.headers.UserName = ck.gU();
+            return config;
+        }else{
+            const message = '错误，请重新登录'
+            Message.error( message );
+            return Promise.reject({ error:  message })
+        }
+    }
 }, function(error) {
-    //console.log('错误拦截')
     return Promise.reject(error);
 })
 
@@ -32,14 +42,11 @@ http.interceptors.response.use(function (response){
     // console.log(response);
     if ( response.data.resCode != 0) {
         Message.error( response.data.message );
-        // console.log('响应拦截');
-        // console.log(response.data );
         console.log(response)
         return response(error)
     }
     return response;
 }, function(error) {
-    //console.log('响应错误');
     return Promise.reject(error)
 })
 

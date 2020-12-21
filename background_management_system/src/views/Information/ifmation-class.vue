@@ -2,25 +2,47 @@
     <div class="ifmation-class">
         <div class="space-30"></div>
         <div class="header">
-            <el-button type="danger" class="block">添加一级分类</el-button>
+            <el-button type="danger" class="block" @click="addcategory">添加一级分类</el-button>
         </div>
         <hr class="thought">
         <div class="class-warp">
-            <el-row>
-                <el-col :span="12">
+            <el-row :gutter="30">
+                <el-col :span="10">
                     <ul class="tree-list-tit">
-                        <li v-for="item in data" :key="item.title">
-                            <p :class="item.fign? 'active' : '' " @click="openit(item)">{{ item.title }}</p>
-                            <ul class="tree-list-count" v-show="item.fign">
-                                <li v-for="itemchild in item.son_data" :key="itemchild.name">
-                                    {{ itemchild.name }}
+                        <li v-for="(item,index) in data.senior" :key="item.id">
+                            <p :class="item.children? 'active': ''">
+                                {{ item.category_name }}
+                                <span class="par-button-grop">
+                                    <el-button type="danger" round size="mini">编辑</el-button>
+                                    <el-button type="success" round size="mini" @click="addchild(item)">添加子集</el-button>
+                                    <el-button round size="mini" @click="del(item,index)">删除</el-button>
+                                </span>
+                            </p>
+                            <ul class="tree-list-count">
+                                <li v-for="(itemchild,childindex) in item.children" :key="itemchild.id">
+                                    {{ itemchild.category_name }}
+                                    <div class="button-grop">
+                                        <el-button size="mini" round>编辑</el-button>
+                                        <el-button type="danger" size="mini" round @click="delchild(childindex)">删除</el-button>
+                                    </div>
                                 </li>
                             </ul>
                         </li>
                     </ul>
                 </el-col>
-                <el-col :span="12">
-                    ooo
+                <el-col :span="14">
+                    <h4 class="menu-title">分类编辑</h4>
+                    <el-form label-width="142px" class="from-wrap" ref="categoryFrom">
+                        <el-form-item label="一级分类名称：" prop="categoryName" v-if='category_first_input'  >
+                            <el-input v-model="form.categoryName" :disabled='is_disabled' ></el-input>
+                        </el-form-item>
+                        <el-form-item label="二级分类名称：" prop="secCategoryName" v-if='category_second_input'>
+                            <el-input v-model="form.secCategoryName" ></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="danger" style='width:100px' @click='submit'>确定</el-button>
+                        </el-form-item>
+                    </el-form>
                 </el-col>
             </el-row>
             
@@ -30,60 +52,100 @@
 
 <script>
 import { ref, reactive, onMounted } from '@vue/composition-api';
-
+import { add_category , show_class , del_category , add_child } from '../../api/info';
 export default {
     components: {
     },
     setup( props, context ){
 //------------------------------------------------------------------------onMounted------------------------------------------------------------
-    //     onMounted( () => {
-    //         aj.gD().then( res => {
-    //             console.log( res )
-    //         })
-    //     } )
-//------------------------------------------------------------------------data------------------------------------------------------------------
-    const data = reactive( [
-        {
-            title: '新闻',
-            fign: true,
-            son_data: [
-                { name: '国内' },
-                { name: '国际' },
-                { name: '数读' },
-                { name: '军事' },
-                { name: '航空' },
-                { name: '无人机' }
-            ],
-        },
-        {
-            title: '科技',
-            fign: false,
-            son_data: [
-                { name: '数学' },
-                { name: '语文' },
-                { name: '英语' },
-                { name: '物理' },
-                { name: '化学' },
-                { name: '航天' }
-            ],
-        },
-    ] )
-//------------------------------------------------------------------------methods---------------------------------------------------------------
-    const openit = reactive( ( item ) => {
-        if( item.fign ){
-            item.fign = false;
-        }else{
-            data.map( (item) => {
-                item.fign = false
+        onMounted( () => {
+            show_class().then( res => {
+                data.senior = res.data.data;
+            } ).catch( err => {
+                return console.log( err );
             } )
-            item.fign = true;
-        }
-    })
+        } )
+//------------------------------------------------------------------------data------------------------------------------------------------------
+        const data = reactive({
+            senior: [],
+            stage: []
+        });
+        const is_disabled = ref(false);
+        const category_first_input = ref(true);
+        const category_second_input = ref(false);
+        const form = reactive( {
+            categoryName: '',
+            secCategoryName: ''
+        } )
+//------------------------------------------------------------------------methods---------------------------------------------------------------
+        //  添加父类
+        const addcategory = (() => {
+            category_second_input.value = false;
+            is_disabled = true;
+        })
+        //  提交内容
+        const submit = reactive( ()=>{
+            if( category_second_input.value ){
+                add_child({
+                    categoryName: form.secCategoryName,
+                    parentId: data.stage.id
+                })
+                 data.senior.map( (item,index) =>{
+                    if( item.id == data.stage.id){
+                        console.log(index)
+                    }
+                 } )
+                if( data.senior[index].children ){
+                    data.senior[index].children.push( { category_name: form.secCategoryName } )
+                }else{
+                    data.senior[index].children = []
+                    data.senior[index].children.push( { category_name: form.secCategoryName } )
+                }
+            }else{
+                if( !form.categoryName ){
+                    return context.root.$message({
+                        type: 'error',
+                        message: '一级分类不能为空',
+                        duration: 1000
+                    })
+                }
+                data.senior.push( { category_name: form.categoryName } );
+                add_category( { categoryName: form.categoryName } );
+            }
+        } )
+        //  删除父级
+        const del = reactive( (item,index) => {
+            del_category({ categoryId: item.id }).then( res => {
+                data.senior.splice( index , 1 );
+            } ).catch( err => {
+                return console.log( err )
+            } )
+        } )
+        //  添加子级
+        const addchild = reactive( (item) => {
+            form.categoryName = item.category_name;
+            is_disabled.value = true;
+            category_second_input.value =true;
+            data.stage = item;
+            console.log(data.stage)
+        } )
+        //  删除子集
+        const delchild = reactive( item => {
+            
+        })
         return {
             /////////////////////////////////////////////////////////////data////////////////////////////////////////////////////////////
             data,
+            form,
+            is_disabled,
+            category_first_input,
+            category_second_input,
             ////////////////////////////////////////////////////////////methods//////////////////////////////////////////////////////////
-            openit
+            addcategory,
+            submit,
+            addchild,
+            del,
+            delchild
         }
     }
 }
@@ -188,6 +250,39 @@ export default {
             .tree-list-tit li:last-child ul li:last-child::after{
                 border: none;
             }
+        }
+        .menu-title{
+            height: 44px;
+            line-height: 44px;
+            color: #33495e;
+            background-color: #f3f3f3;
+            text-indent: 2em;
+        }
+        .from-wrap{
+            padding-top: 20px;
+            input{
+                max-width: 275px;
+            }
+        }
+        .par-button-grop{
+            float: right;
+            margin-right: 30px;
+            display: none;
+        }
+        .tree-list-tit>li>p:hover{
+            background-color: #f3f3f3;
+        }
+        .tree-list-tit>li p:hover .par-button-grop{
+            display: block;
+        }
+        .button-grop{
+            float: right;
+            margin-right: 40px;
+            display: none;
+        }
+        .tree-list-count li:hover .button-grop{
+            float: right;
+            display: block;
         }
     }
 </style>
