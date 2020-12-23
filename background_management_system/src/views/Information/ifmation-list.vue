@@ -4,11 +4,10 @@
     <el-row :gutter="14">
         <el-col :span="4">
             <div class="label-warp category">
-                <label for="category">类型:</label>
+                <label for="category">分类:</label>
                 <div class="warp-content">
                     <el-select id="category" v-model="formInline.region" placeholder="请选择" >
-                        <el-option label="区域一" value="shanghai" align="center"></el-option>
-                        <el-option label="区域二" value="beijing"  align="center"></el-option>
+                        <el-option  v-for="cate in categorya.item" :key="cate.id"  value="shanghai" align="center" :label="cate.category_name"></el-option>
                     </el-select>
                 </div>
             </div>
@@ -70,7 +69,7 @@
         </el-table>
     </el-row>
     <!-- dialog -->
-    <DialogNewly_list :dialogFormVisible.sync="dialogFormVisible"/>
+    <DialogNewly_list :dialogFormVisible.sync="dialogFormVisible" :category="categorya.item"/>
     <DialongEdit :editVisible.sync="editVisible"/>
     <div class="bottom">
         <el-button size="medium" class="delete_num pull-left">批量删除</el-button>
@@ -79,19 +78,23 @@
     </div>
   </div>
 </template>
+
 <script>
 import { ref , reactive , onMounted, watch } from "@vue/composition-api";
 import AJAX from '../../api/login';
 import DialogNewly_list from './dialog/list-info';
 import DialongEdit from './dialog/list-edit';
 import confirm from '../../utils/helper';
-import global from '../../utils/global_3.0'
+import global from '../../utils/global_3.0';
+import { common } from '../../api/common'
 export default {
     components: {
         DialogNewly_list,
         DialongEdit
     },
     setup( props, { root , refs } ) {
+        const { str , confirm } = global()
+        const { category , getCategoryAll } = common()
 //------------------------------------------------------------------------onMounted------------------------------------------------------------------------
         // let data = {
         //     categoryId: 1,
@@ -102,12 +105,16 @@ export default {
         //     pageNumber: 1,
         //     pageSize: 10
         // }
-        // onMounted( () => {
-        //     AJAX.gL( data ).then( res  => {
-        //         console.log( data )
-        //     } )
-        // } )
+        watch( () => category.item, (value) => {
+            categorya.item = value;
+        } )
+        onMounted( () => {
+            getCategoryAll()
+        } )
 //----------------------------------------------------------------------------data-------------------------------------------------------------------------
+        const categorya = reactive ({
+            item: []
+        })
         const inline = ref(true);
         const formInline = reactive({
             region: "",
@@ -130,8 +137,7 @@ export default {
                 opration: {},
             },
             {
-                tit:
-                "习近平在中央政协工作会议暨庆祝中国人民政治协商会议成立70周年大会上发表重要讲话",
+                tit: "习近平在中央政协工作会议暨庆祝中国人民政治协商会议成立70周年大会上发表重要讲话",
                 category: "国内信息",
                 date: "2019-09-10 19:31:31",
                 admin: "张三",
@@ -197,7 +203,6 @@ export default {
             //     center: true,
             //     callback: callback
             // } )
-            const { str , confirm } = global()
             confirm( { 
                 content: "此操作将永久删除该文件, 是否继续?",
                 top: "提示",
@@ -227,7 +232,8 @@ export default {
                 handleEdit,
                 dialogFormVisible,
                 editVisible,
-                edit
+                edit,
+                categorya
             };
         },
     };

@@ -17,7 +17,6 @@ export default global = () => {
 
         })
     }
-
     return {
         str,
         confirm

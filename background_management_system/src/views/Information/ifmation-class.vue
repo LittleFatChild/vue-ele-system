@@ -13,7 +13,7 @@
                             <p :class="item.children? 'active': ''">
                                 {{ item.category_name }}
                                 <span class="par-button-grop">
-                                    <el-button type="danger" round size="mini">编辑</el-button>
+                                    <el-button type="danger" round size="mini" @click="editdata( item,'parent' )">编辑</el-button>
                                     <el-button type="success" round size="mini" @click="addchild(item)">添加子集</el-button>
                                     <el-button round size="mini" @click="del(item,index)">删除</el-button>
                                 </span>
@@ -22,8 +22,8 @@
                                 <li v-for="(itemchild,childindex) in item.children" :key="itemchild.id">
                                     {{ itemchild.category_name }}
                                     <div class="button-grop">
-                                        <el-button size="mini" round>编辑</el-button>
-                                        <el-button type="danger" size="mini" round @click="delchild(childindex)">删除</el-button>
+                                        <el-button size="mini"  @click="editdata( itemchild,'child' , item )" round>编辑</el-button>
+                                        <el-button type="danger" size="mini" round @click="delchild(itemchild,item,childindex)">删除</el-button>
                                     </div>
                                 </li>
                             </ul>
@@ -45,14 +45,13 @@
                     </el-form>
                 </el-col>
             </el-row>
-            
         </div>
     </div>
 </template>
 
 <script>
 import { ref, reactive, onMounted } from '@vue/composition-api';
-import { add_category , show_class , del_category , add_child } from '../../api/info';
+import { add_category , show_class , del_category , add_child , edit_category } from '../../api/info';
 export default {
     components: {
     },
@@ -66,13 +65,15 @@ export default {
             } )
         } )
 //------------------------------------------------------------------------data------------------------------------------------------------------
+        console.log(props)
         const data = reactive({
             senior: [],
             stage: []
         });
-        const is_disabled = ref(false);
+        const is_disabled = ref(true);
         const category_first_input = ref(true);
         const category_second_input = ref(false);
+        let edit = '编辑';
         const form = reactive( {
             categoryName: '',
             secCategoryName: ''
@@ -81,58 +82,132 @@ export default {
         //  添加父类
         const addcategory = (() => {
             category_second_input.value = false;
-            is_disabled = true;
+            is_disabled.value = false;
+            is_disabled.value = false;
+            edit = '添加'
         })
         //  提交内容
         const submit = reactive( ()=>{
-            if( category_second_input.value ){
-                add_child({
-                    categoryName: form.secCategoryName,
-                    parentId: data.stage.id
-                })
-                 data.senior.map( (item,index) =>{
-                    if( item.id == data.stage.id){
-                        console.log(index)
-                    }
-                 } )
-                if( data.senior[index].children ){
-                    data.senior[index].children.push( { category_name: form.secCategoryName } )
-                }else{
-                    data.senior[index].children = []
-                    data.senior[index].children.push( { category_name: form.secCategoryName } )
-                }
+            if( edit == '编辑' ){
+                editdatareal()
             }else{
-                if( !form.categoryName ){
-                    return context.root.$message({
-                        type: 'error',
-                        message: '一级分类不能为空',
-                        duration: 1000
-                    })
+                if( category_second_input.value ){
+                    add_child({
+                        categoryName: form.secCategoryName,
+                        parentId: data.stage.id
+                    }).then( res => {
+                        data.senior.map( (item,index) =>{
+                            if( item.children && item.id == data.stage.id){
+                                console.log(item)
+                                data.senior[index].children.push( { 
+                                    category_name: res.data.data.category_name ,
+                                    id: res.data.data.id,
+                                    parentId: '' + data.stage.id
+                                } );
+                            }else if( !item.children ){
+                                console.log( item )
+                                data.senior[index].children = [];
+                                data.senior[index].children.push( { 
+                                    category_name: res.data.data.category_name ,
+                                    id: res.data.data.id,
+                                    parentId: '' + data.stage.id
+                                } );
+                            }
+                        } )
+                    }).catch( err => {
+                        console.log(err)
+                    } )
+                    
+                }else{
+                    if( !form.categoryName ){
+                        return context.root.$message({
+                            type: 'error',
+                            message: '一级分类不能为空',
+                            duration: 1000
+                        })
+                    }
+                    add_category( { categoryName: form.categoryName } ).then( res => {
+                        data.senior.push(  { 
+                                category_name: res.data.data.category_name,
+                                children: [],
+                                id: res.data.data.id
+                        } )
+                    } );
                 }
-                data.senior.push( { category_name: form.categoryName } );
-                add_category( { categoryName: form.categoryName } );
             }
         } )
-        //  删除父级
-        const del = reactive( (item,index) => {
+        //  删除父类
+        const del = reactive( (item,index,type) => {
             del_category({ categoryId: item.id }).then( res => {
                 data.senior.splice( index , 1 );
             } ).catch( err => {
                 return console.log( err )
             } )
         } )
-        //  添加子级
+        //  添加子类
         const addchild = reactive( (item) => {
             form.categoryName = item.category_name;
             is_disabled.value = true;
             category_second_input.value =true;
             data.stage = item;
-            console.log(data.stage)
+            edit = '添加'
         } )
-        //  删除子集
-        const delchild = reactive( item => {
-            
+        //  删除子类
+        const delchild = reactive( (child,parent,childindex) => {
+            del_category({ categoryId: child.id }).then( res => {
+                parent.children.map( (item,index) => {
+                    if(item.id == child.id){
+                        parent.children.splice( index , 1 );
+                    }
+                } )
+            } ).catch( err => {
+                return console.log( err )
+            } )
         })
+        let fic_data = null;
+        let fic_type = null;
+        let fic_parent = null;
+        const editdata = reactive( ( data , type , parent) => {
+            edit = '编辑';
+            fic_data = data;
+            fic_type = type;
+            if( type == 'child' ){
+                form.categoryName = parent.category_name;
+                is_disabled.value = true;
+                category_second_input.value =true;
+            }else{
+                is_disabled.value = false;
+            }
+        } )
+        //  编辑子类 父类
+        const editdatareal = ( () => {
+            edit_category({ 
+                id: fic_data.id,
+                categoryName: fic_type=='parent'? form.categoryName : form.secCategoryName
+            } ).then( res => {
+                if( fic_type == 'parent'){
+                    data.senior.map( (item,i) => {
+                        if( item.id == fic_data.id ){
+                            data.senior[i].category_name = form.categoryName
+                        }
+                    } )
+                }else{
+                    data.senior.map( (item,i) => {
+                        if( item.id == fic_data.parent_id ){
+                            data.senior[i].children.map( (child,j) => {
+                                if( child.id == fic_data.id ){
+                                    console.log(  data.senior[i].children[j])
+                                    data.senior[i].children[j].category_name = form.secCategoryName;
+                                }
+                            } )
+                        }
+                    } )
+                }
+                
+            } ).catch( err => {
+
+            } )
+        } )
         return {
             /////////////////////////////////////////////////////////////data////////////////////////////////////////////////////////////
             data,
@@ -145,7 +220,8 @@ export default {
             submit,
             addchild,
             del,
-            delchild
+            delchild,
+            editdata
         }
     }
 }

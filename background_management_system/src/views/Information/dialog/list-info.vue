@@ -35,6 +35,10 @@ export default {
         dialogFormVisible: {
             type: Boolean,
             default: false
+        },
+        category: {
+            type: Array,
+            default: []
         }
     },
     setup( props , context ){

@@ -13,14 +13,14 @@ const http = axios.create({ // http.defaults.baseURL = 'http://www.web-jshtml.cn
 
 
 const whiteToken = [
-    '/login',
+    '/login/',
     /register/,
     '/getSms/'
 ]
 // 添加请求头拦截
 http.interceptors.request.use(function (config) {
-    // console.log(config)
-    if( whiteToken.indexOf(config.url) !== -1 ){
+    // console.log(config.url)
+    if( whiteToken.indexOf(config.url) != -1 ){
         return config;
     } else {
         if( ck.gT() ){

@@ -30,3 +30,11 @@ export const add_child = (data) => {
         data: data
     })
 }
+
+export const edit_category = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/editCategory/',
+        data: data
+    })
+}
