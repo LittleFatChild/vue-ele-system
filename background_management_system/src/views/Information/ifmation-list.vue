@@ -7,7 +7,7 @@
                 <label for="category">分类:</label>
                 <div class="warp-content">
                     <el-select id="category" v-model="formInline.region" placeholder="请选择" >
-                        <el-option  v-for="cate in categorya.item" :key="cate.id"  value="shanghai" align="center" :label="cate.category_name"></el-option>
+                        <el-option  v-for="cate in categorya.item" :key="cate.id"  :value="cate.category_name" align="center" :label="cate.category_name"></el-option>
                     </el-select>
                 </div>
             </div>
@@ -42,17 +42,14 @@
         </el-col>
     </el-row>
     <el-row>
-        <el-table :border="true" ref="multipleTable" :data="tableData" tooltip-effect="dark" style="width: 100%; font-size: 13px; margin-top: 30px;" @selection-change="handleSelectionChange" >
+        <el-table :border="true" ref="multipleTable" :data="tableData.item" tooltip-effect="dark" style="width: 100%; font-size: 13px; margin-top: 30px;" @selection-change="handleSelectionChange" >
             <el-table-column align="center" type="selection">
             </el-table-column>
-            <el-table-column align="center" label="标题" min-width="4">
-                <template slot-scope="scope">
-                    {{ scope.row.tit }}
-                </template>
+            <el-table-column align="center" prop="title" label="标题" min-width="6">
             </el-table-column>
-            <el-table-column align="center" prop="date" label="日期" min-width="1">
+            <el-table-column align="center" prop="categoryId" label="类别" :formatter="_cate" min-width="2">
             </el-table-column>
-            <el-table-column align="center" prop="category" label="类别" min-width="2">
+            <el-table-column align="center" prop="createDate" label="日期" :formatter='_date' min-width="1">
             </el-table-column>
             <el-table-column align="center" prop="admin" label="管理人" min-width="1">
             </el-table-column>
@@ -86,7 +83,9 @@ import DialogNewly_list from './dialog/list-info';
 import DialongEdit from './dialog/list-edit';
 import confirm from '../../utils/helper';
 import global from '../../utils/global_3.0';
-import { common } from '../../api/common'
+import { common } from '../../api/common';
+import { get_news } from '../../api/info';
+import { formatDate } from '../../utils/formatdate'
 export default {
     components: {
         DialogNewly_list,
@@ -96,20 +95,12 @@ export default {
         const { str , confirm } = global()
         const { category , getCategoryAll } = common()
 //------------------------------------------------------------------------onMounted------------------------------------------------------------------------
-        // let data = {
-        //     categoryId: 1,
-        //     startTiem: '2019-12-12 12:00:00',
-        //     endTime: '2019-12-12 12:00:00',
-        //     title: '手把手撸码前端',
-        //     id: 12,
-        //     pageNumber: 1,
-        //     pageSize: 10
-        // }
         watch( () => category.item, (value) => {
             categorya.item = value;
         } )
         onMounted( () => {
-            getCategoryAll()
+            getCategoryAll();
+            getNews();
         } )
 //----------------------------------------------------------------------------data-------------------------------------------------------------------------
         const categorya = reactive ({
@@ -128,36 +119,21 @@ export default {
         });
         const value1 = reactive( [ new Date( 2016, 12, 14 ), new Date( 2016, 12, 15) ] );
         const input = ref( "" );
-        const tableData = reactive([
-            {
-                tit: "纽约市长白思豪宣布退出总统竞选 特朗普发推回应",
-                category: "国内信息",
-                date: "2019-09-10 19:31:31",
-                admin: "管理员",
-                opration: {},
-            },
-            {
-                tit: "习近平在中央政协工作会议暨庆祝中国人民政治协商会议成立70周年大会上发表重要讲话",
-                category: "国内信息",
-                date: "2019-09-10 19:31:31",
-                admin: "张三",
-                opration: {},
-            },
-            {
-                tit: "基里巴斯与台当局 “断交” 系蔡当局上台后断交第7国 ",
-                category: "国内信息",
-                date: "2019-09-10 19:31:31",
-                admin: "李四",
-                opration: {},
-            },
-            {
-                tit: "不选了！纽约市长白思豪宣布退出2020美国大选",
-                category: "国内信息",
-                date: "2019-09-10 19:31:31",
-                admin: "李四",
-                opration: {},
-            },
-        ]);
+        const tableData = reactive({
+            item: []
+        });
+        const getNews = () => {
+            const data = {
+                pageNumber: 1,
+                pageSize: 10
+            }
+            get_news( data ).then( res => {
+                tableData.item = res.data.data.data
+            } ).catch( err => {
+                console.log( err )
+            })
+
+        }
         const multipleSelection = reactive([]);
         const dialogFormVisible = ref(false);
         const editVisible = ref(false);
@@ -168,7 +144,7 @@ export default {
                     refs.multipleTable.toggleRowSelection(row);
                 });
             }else {
-                    refs.multipleTable.clearSelection();
+                refs.multipleTable.clearSelection();
             }
         };
         const handleSelectionChange = (val) => {
@@ -220,6 +196,20 @@ export default {
         const edit = reactive((bool) => {
             editVisible.value = bool;
         })
+        const _date = ((row) => {
+            return formatDate(row.createDate);
+        })
+       
+        const _cate = (row) => {
+            let id = row.categoryId;
+            let tmp = category.item.filter( cate => cate.id === id );
+            if( tmp.length==0){
+                return '无'
+            }else{
+                return tmp[0].category_name;
+            }
+            
+        }
         return {
                 inline,
                 formInline,
@@ -233,7 +223,9 @@ export default {
                 dialogFormVisible,
                 editVisible,
                 edit,
-                categorya
+                categorya,
+                _cate,
+                _date
             };
         },
     };

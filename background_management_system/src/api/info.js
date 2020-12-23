@@ -38,3 +38,19 @@ export const edit_category = (data) => {
         data: data
     })
 }
+
+export const get_news = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/getList/',
+        data: data
+    })
+}
+
+export const add_news = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/add/',
+        data: data
+    })
+}
