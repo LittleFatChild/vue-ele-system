@@ -54,3 +54,19 @@ export const add_news = (data) => {
         data: data
     })
 }
+
+export const delete_news = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/deleteInfo/',
+        data: data
+    })
+}
+
+export const edit_news = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/news/editInfo/',
+        data: data
+    })
+}

@@ -59,11 +59,15 @@ export default {
             category.item = props.category;
             console.log(props.category)
         })
+        const reset = () => {
+            form.category = '';
+            form.title = '';
+            form.content = '';
+        }
         const close = reactive( () => {
             context.emit('update:dialogFormVisible',false);
-            // form.category = '';
-            // form.title = '';
-            // form.content = '';
+            // reset()
+            context.emit('loadNews');
         } )
         const handleEdit = reactive ( () => {
             console.log(form)

@@ -9,14 +9,11 @@ import axios from 'axios';
 import VueCompositionApi from '@vue/composition-api';
 import './icons/';
 import global from './utils/global';
-import moment from 'moment';
-// import 'default-passive-events';
-// import gbcss from "./styles/main.scss";
+
 Vue.use(global);
 Vue.use(ElementUI);
 Vue.use(VueCompositionApi);
 Vue.prototype.$http = axios
-Vue.prototype.$moment = moment
 Vue.config.productionTip = false;
 
 new Vue({

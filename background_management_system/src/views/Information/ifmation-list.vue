@@ -35,7 +35,7 @@
             <el-input v-model="formInline.search_input" placeholder="请输入内容"></el-input>
         </el-col>
         <el-col :span="4">
-            <el-button type="danger" class="nbtnss">搜索</el-button>
+            <el-button type="danger" class="nbtnss" @click="getNews">搜索</el-button>
         </el-col>
         <el-col :span="2">
             <el-button type="danger" class="nbtns" @click="handleEdit(true)">新增</el-button>
@@ -58,7 +58,7 @@
                     <el-button type="danger" @click="handleDelete( scope.$index, scope.row )" class="btns">
                         删除
                     </el-button>
-                    <el-button type="success" @click="edit( true )" class="btns">
+                    <el-button type="success" @click="edit( true , scope.row.id )" class="btns">
                         编辑
                     </el-button>
                 </template>
@@ -66,11 +66,19 @@
         </el-table>
     </el-row>
     <!-- dialog -->
-    <DialogNewly_list :dialogFormVisible.sync="dialogFormVisible" :category="categorya.item"/>
-    <DialongEdit :editVisible.sync="editVisible"/>
+    <DialogNewly_list :dialogFormVisible.sync="dialogFormVisible"  :category="categorya.item" @loadNews="getNews" />
+    <DialongEdit :editVisible.sync="editVisible" :category="categorya.item" :id="editid"/>
     <div class="bottom">
-        <el-button size="medium" class="delete_num pull-left">批量删除</el-button>
-        <el-pagination class="page pull-right" background layout="prev, pager, next" :total="1000" >
+        <el-button size="medium" class="delete_num pull-left" @reload="getNews" @click="delAll(tableData.item)">批量删除</el-button>
+        <el-pagination 
+            class="page pull-right" 
+            background 
+            layout="sizes , total , prev, pager, next" 
+            :current-page="1" 
+            @size-change="size_change" 
+            @current-change="current_change"
+            :page-sizes="[5,10,20]"
+            :total="total" >
         </el-pagination>
     </div>
   </div>
@@ -84,7 +92,7 @@ import DialongEdit from './dialog/list-edit';
 import confirm from '../../utils/helper';
 import global from '../../utils/global_3.0';
 import { common } from '../../api/common';
-import { get_news } from '../../api/info';
+import { get_news , delete_news } from '../../api/info';
 import { formatDate } from '../../utils/formatdate'
 export default {
     components: {
@@ -103,6 +111,7 @@ export default {
             getNews();
         } )
 //----------------------------------------------------------------------------data-------------------------------------------------------------------------
+        const total = ref(0)
         const categorya = reactive ({
             item: []
         })
@@ -117,31 +126,25 @@ export default {
             ],
             search_input: ''
         });
-        const value1 = reactive( [ new Date( 2016, 12, 14 ), new Date( 2016, 12, 15) ] );
         const input = ref( "" );
         const tableData = reactive({
             item: []
         });
-        const getNews = () => {
-            const data = {
-                pageNumber: 1,
-                pageSize: 10
-            }
-            get_news( data ).then( res => {
-                tableData.item = res.data.data.data
-            } ).catch( err => {
-                console.log( err )
-            })
-
-        }
         const multipleSelection = reactive([]);
         const dialogFormVisible = ref(false);
         const editVisible = ref(false);
+        const page = reactive({
+            pageNumber: 1,
+            pageSize: 10
+        })
+        let selected_data = reactive([]);
+        const editid = ref('')
 //----------------------------------------------------------------------------methods--------------------------------------------------------------------
         const toggleSelection = (rows) => {
             if ( rows ) {
                 rows.forEach((row) => {
                     refs.multipleTable.toggleRowSelection(row);
+                    console.log(row)
                 });
             }else {
                 refs.multipleTable.clearSelection();
@@ -151,8 +154,17 @@ export default {
             multipleSelection.value = val;
         };
         const handleDelete = ( index , row ) => {
+            selected_data = reactive[Number(row.id)]
+            // console.log( index , row );
             const callback = () =>{
-                console.log(111)
+                // let data = {
+                // id: [row.id]
+                // }
+                // delete_news( data ).then( res => {
+                //     getNews();
+                // } ).catch( err => {
+                //     console.log( err )
+                // } )
             }
             // confirm.confirm({
             //     content: "此操作将永久删除该文件, 是否继续?",
@@ -179,6 +191,7 @@ export default {
             //     center: true,
             //     callback: callback
             // } )
+            //  //全局注入3.0方法
             confirm( { 
                 content: "此操作将永久删除该文件, 是否继续?",
                 top: "提示",
@@ -186,20 +199,38 @@ export default {
                 center: true,
                 callback: callback
             } )
-            watch( () => str.value ,(value) => {
-                console.log('===>',value)
-            } )
+            // watch( () => str.value ,(value) => {
+            //     console.log('===>',value)
+            // } )
         };
+        const delAll = reactive( (rows) => {
+           if( selected_data.length == 0 ){
+              return false;
+           }else{
+               console.log( 'oo' )
+           }
+        } )
         const handleEdit = (bool) => {
             dialogFormVisible.value = bool;
         };
-        const edit = reactive((bool) => {
+        const edit = reactive( (bool,id) => {
             editVisible.value = bool;
+            console.log( id )
+            editid.value = id;
         })
         const _date = ((row) => {
             return formatDate(row.createDate);
         })
-       
+        //  点击页码
+        const current_change = ( (currentPage) => {
+            page.pageNumber = currentPage;
+            getNews()
+        } )
+        //  点击页大小
+        const size_change = ( pageSize ) => {
+            page.pageSize = pageSize;
+            getNews()
+        }
         const _cate = (row) => {
             let id = row.categoryId;
             let tmp = category.item.filter( cate => cate.id === id );
@@ -208,12 +239,35 @@ export default {
             }else{
                 return tmp[0].category_name;
             }
-            
+        }
+        const search = () => {
+            let data = {
+                pageNumber: page.pageNumber,
+                pageSize: page.pageSize
+            }
+            //  //处理类别
+            if( formInline.region ){
+                data.category = formInline.region;
+            }
+            if( Array.isArray(formInline.date) && formInline.date.length > 0 ){
+                data.startTime = formInline.date[0];
+                data.endTime = formInline.date[1]
+            }
+            return data;
+        }
+//--------------------------------------------------------------------onMounted---------------------------------------------------------------
+        const getNews = () => {
+            let data = search()
+            get_news( data ).then( res => {
+                tableData.item = res.data.data.data;
+                total.value = res.data.data.total;
+            } ).catch( err => {
+                return console.log( err )
+            })
         }
         return {
                 inline,
                 formInline,
-                value1,
                 input,
                 tableData,
                 toggleSelection,
@@ -225,7 +279,13 @@ export default {
                 edit,
                 categorya,
                 _cate,
-                _date
+                _date,
+                getNews,
+                current_change,
+                size_change,
+                total,
+                delAll,
+                editid
             };
         },
     };
