@@ -7,16 +7,29 @@
             <!-- <el-radio-button :label="false">展开</el-radio-button>
             <el-radio-button :label="true">收起</el-radio-button> -->
         <!-- </el-radio-group> -->
-        <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" :collapse="isCollapse" background-color="#344a5f" text-color="#ffffff" router>
+        <el-menu default-active="1-4-1" 
+            class="el-menu-vertical-demo" 
+            @open="handleOpen" 
+            @close="handleClose" 
+            :collapse="isCollapse" 
+            background-color="#344a5f" 
+            text-color="#ffffff" 
+            router
+            >
             <template v-for="(item,index) in routes">
                 <el-submenu :index="item.path"  :key="index" v-if="!item.hidden">
                     <template slot="title" >
                         <svg-icon :iconName='item.mate.icon'/>
                         <span slot="title">{{ item.mate.name }}</span>
                     </template>
-                    <el-menu-item :index="itemChild.path" v-for="itemChild in item.children" :key="itemChild.mate.id">
-                        <span @click="rjoin( itemChild )">{{ itemChild.mate.name }}</span>
-                    </el-menu-item>
+                    <!-- 二级路由 -->
+                    <template v-for="itemChild in item.children">
+                        <el-menu-item :index="itemChild.path" v-if="!itemChild.hidden" :key="itemChild.mate.id">
+                            <!-- <span @click="rjoin( itemChild )"> -->
+                                {{ itemChild.mate.name }}
+                            <!-- </span> -->
+                        </el-menu-item>
+                    </template>
                 </el-submenu>
             </template>
         </el-menu>

@@ -27,6 +27,7 @@ const routes = [
         children: [
             {
                 path: '/index',
+                hidden: false,
                 mate: {
                     id: new Date().getTime(),
                     name: 'index'
@@ -48,6 +49,7 @@ const routes = [
         children: [
             {
                 path: '/list',
+                hidden: false,
                 mate: {
                     id: "2020-12-9-pm15.42.30",
                     name: '信息列表'
@@ -56,11 +58,21 @@ const routes = [
             },
             {
                 path: '/class',
+                hidden: false,
                 mate: {
                     id: "2020-12-9-pm15.42.31",
                     name: '信息分类'
                 },
                 component: () => import('../views/Information/ifmation-class.vue')
+            },
+            {
+                path: '/details',
+                hidden: true,
+                mate: {
+                    id: "2020-12-25-pm13.51.18",
+                    name: '详情编辑'
+                },
+                 component: () => import('../views/Information/ifmation-details.vue')
             }
         ]
     },
@@ -77,6 +89,7 @@ const routes = [
         children: [
             {
                 path: '/ulist',
+                hidden: false,
                 mate: {
                     id: "2020-12-9-pm15.42.30",
                     name: '用户列表'
@@ -85,6 +98,7 @@ const routes = [
             },
             {
                 path: '/uclass',
+                hidden: false,
                 mate: {
                     id: "2020-12-9-pm15.42.31",
                     name: '用户分类'

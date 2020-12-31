@@ -8,7 +8,7 @@ const state = {
 }
 
 const getters = {
-    isCollapse: () => state.isCollapse
+    isCollapse: (state) => state.isCollapse
 }
 
 const mutations = {

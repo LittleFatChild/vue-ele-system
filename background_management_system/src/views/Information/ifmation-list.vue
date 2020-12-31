@@ -53,13 +53,16 @@
             </el-table-column>
             <el-table-column align="center" prop="admin" label="管理人" min-width="1">
             </el-table-column>
-            <el-table-column align="center" prop="opration" label="操作" min-width="2">
-                <template slot-scope="scope">
-                    <el-button type="danger" @click="handleDelete( scope.$index, scope.row )" class="btns">
+            <el-table-column align="center" prop="opration" label="操作" min-width="3">
+                <template slot-scope="scope" style="white-space: nowrap">
+                    <el-button type="danger" @click="handleDelete( scope.$index, scope.row )" class="btns" size="mini">
                         删除
                     </el-button>
-                    <el-button type="success" @click="edit( true , scope.row.id )" class="btns">
+                    <el-button type="success" @click="edit( true , scope.row.id )" class="btns" size="mini">
                         编辑
+                    </el-button>
+                    <el-button type="success" @click="details( scope.row.id )" class="btns" size="mini">
+                        详情编辑
                     </el-button>
                 </template>
             </el-table-column>
@@ -140,6 +143,7 @@ export default {
         let selected_data = reactive([]);
         const editid = ref('')
 //----------------------------------------------------------------------------methods--------------------------------------------------------------------
+
         const toggleSelection = (rows) => {
             if ( rows ) {
                 rows.forEach((row) => {
@@ -150,9 +154,11 @@ export default {
                 refs.multipleTable.clearSelection();
             }
         };
+
         const handleSelectionChange = (val) => {
             multipleSelection.value = val;
         };
+        
         const handleDelete = ( index , row ) => {
             selected_data = reactive[Number(row.id)]
             // console.log( index , row );
@@ -203,6 +209,7 @@ export default {
             //     console.log('===>',value)
             // } )
         };
+
         const delAll = reactive( (rows) => {
            if( selected_data.length == 0 ){
               return false;
@@ -210,14 +217,17 @@ export default {
                console.log( 'oo' )
            }
         } )
+
         const handleEdit = (bool) => {
             dialogFormVisible.value = bool;
         };
+
         const edit = reactive( (bool,id) => {
             editVisible.value = bool;
             console.log( id )
             editid.value = id;
         })
+
         const _date = ((row) => {
             return formatDate(row.createDate);
         })
@@ -231,6 +241,7 @@ export default {
             page.pageSize = pageSize;
             getNews()
         }
+
         const _cate = (row) => {
             let id = row.categoryId;
             let tmp = category.item.filter( cate => cate.id === id );
@@ -240,6 +251,7 @@ export default {
                 return tmp[0].category_name;
             }
         }
+
         const search = () => {
             let data = {
                 pageNumber: page.pageNumber,
@@ -254,6 +266,27 @@ export default {
                 data.endTime = formInline.date[1]
             }
             return data;
+        }
+        const details = () => {
+            var params = {
+                id: {
+                    value: 1,
+                    key: 'id',
+                    session: true
+                },
+                content: {
+                    value: 'xxx',
+                    key: 'content',
+                    session: true
+                }
+            }
+            root.$store.commit('params/CACHE_PARAMS' , params );
+            let jump = root.$router.push({
+                path: '/details',
+                params: params
+            })
+            root.$router.options.routes[2].children[2].hidden = false;
+            window.open( jump.herf, '_self' );
         }
 //--------------------------------------------------------------------onMounted---------------------------------------------------------------
         const getNews = () => {
@@ -285,7 +318,8 @@ export default {
                 size_change,
                 total,
                 delAll,
-                editid
+                editid,
+                details
             };
         },
     };
@@ -299,7 +333,7 @@ export default {
             &.key-word{ @include labelDom(60,center,40) }
         }
         .btns{
-            padding: 8px 17px;
+            padding: 6px 15px;
         }
 
         .nbtnss{
