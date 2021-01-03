@@ -1,6 +1,5 @@
 <template>
     <div class="details">
-        这是详细编辑的地方
         <el-form :model="form" status-icon  ref="ruleForm" label-width="100px">
 
             <el-form-item label="分类:" placeholder="请选择">
