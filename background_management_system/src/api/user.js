@@ -15,3 +15,11 @@ export const add_users = (data) => {
         data: data
     })
 }
+
+export const del_users = (data) => {
+    return axios.request({
+        method: 'post',
+        url: '/user/delete/',
+        data: data
+    })
+}

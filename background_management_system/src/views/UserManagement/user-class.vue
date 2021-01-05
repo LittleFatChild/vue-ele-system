@@ -15,11 +15,12 @@
                             </selectVue>
                         </el-col>
                          <el-col :span="4">
-                            <el-input type="danger">
+                            <el-input type="danger" v-model="data.key">
+
                             </el-input>
                         </el-col>
                         <el-col :span="5">
-                            <el-button type="danger">
+                            <el-button type="danger" @click="search">
                                 搜索
                             </el-button>
                         </el-col>
@@ -34,7 +35,7 @@
         </el-row>
         <div class="space-30"></div>
         <el-row>
-            <tableVue :tableConfig="data.tableConfig">
+            <tableVue :tableConfig="data.tableConfig" :tableSelect.sync='data.tableSelect' ref='table'>
                 <template #del='scopeData'>
                      <el-button type="danger" size="mini" @click="del(scopeData.data)">
                         删除
@@ -46,13 +47,13 @@
                     </el-button>
                 </template>
                 <template #footer>
-                    <el-button type="info">
+                    <el-button type="info" @click="del_more">
                         批量删除
                     </el-button>
                 </template>
             </tableVue>
         </el-row>
-        <div class="space-30"></div>
+        <!-- <div class="space-30"></div> -->
 
         <!-- <DialogNewly :ClassDialogVisible="ClassDialogVisible" @SonSend = "closing" /> -->
     </div>
@@ -63,7 +64,9 @@
 import DialogNewly from './dialog/user-class-info';
 import selectVue from '../../components/select/index'
 import { ref, reactive, onMounted } from '@vue/composition-api';
-import tableVue from '../../components/table/index'
+import tableVue from '../../components/table/index';
+import { del_users } from '../../api/user';
+import global from '../../utils/global_3.0'
 export default {
     components: {
         DialogNewly,
@@ -75,7 +78,7 @@ export default {
 
 //--------------------------------------------------------------------data----------------------------------------------------------------
     const data = reactive({
-        option: { init: ['name','phone'] },
+        option: { init: ['id','name'] },
         selectValue: {},
         tableConfig: {
             thead: [
@@ -128,13 +131,16 @@ export default {
                     pageSize: 2
                 }
             },
-            page: {
-                layout: 'total,sizes,prev,pager,next',
-                total: 0,
-                current_page: 1,
-                page_sizes: [2,4,5]
-            }
-        }
+            pageData: 'total,sizes,prev,pager,next',
+            // page: {
+            //     layout: 'total,sizes,prev,pager,next',
+            //     total: 0,
+            //     current_page: 1,
+            //     page_sizes: [2,4,5]
+            // }
+        },
+        tableSelect: [],
+        key: ''
     })
     const ClassDialogVisible = ref(false);
     
@@ -145,10 +151,50 @@ export default {
     const closing = reactive ( (value) =>{
         ClassDialogVisible.value = value;
     } )
-    const del = (val) => {
-        console.log(val)
+    
+    //  // 删除业务
+    const { confirm } = global()
+    const do_del = () => {
+        del_users({
+            id: data.tableSelect
+        }).then( res => {
+            context.refs['table'].refresh()
+        } ).catch( err => {
+            console.log( err )
+        })
     }
-
+    const checkdel = () => {
+        confirm({
+            content: '确认删除',
+            tip: '删除用户',
+            type: 'danger',
+            center: 'center',
+            callback: do_del
+        })
+    }
+    const del = ({ id }) => {
+        data.tableSelect = [ id ];
+        checkdel()
+        
+    }
+    const del_more = () => {
+        if( data.tableSelect.length == 0 ){
+            return context.root.$message({
+                message: 'Please checked first',
+                type: 'error',
+                duration: 1500
+            })
+        }
+        checkdel()
+    }
+    //  // 搜索业务
+        // 带参数请求数据
+    
+    const search = () => {
+        context.refs['table'].refreshWithParams({
+            [data.selectValue.value]: data.key
+        })
+    }
         return {
             /////////////////////////////////////////////////////////////data////////////////////////////////////////////////////////////
             data,
@@ -156,7 +202,9 @@ export default {
             ////////////////////////////////////////////////////////////methods//////////////////////////////////////////////////////////
             handNewly,
             closing,
-            del
+            del,
+            del_more,
+            search
         }
     }
 }

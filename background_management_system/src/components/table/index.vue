@@ -4,6 +4,8 @@
         :data="data.tableData"
         style="width: 100%"
         border
+        @select='select'
+        @select-all='select'
         >
             <el-table-column type="selection" width="55" v-if="data.tableConfig.showSelect" align="center">
 
@@ -15,7 +17,6 @@
                     <template v-slot='scope'>
                         <slot :name="item.slotName" :data='scope.row'></slot>
                     </template>
-                
                 </el-table-column>
             </template>
         </el-table>
@@ -27,10 +28,11 @@
             <el-col :span="20">
                 <el-pagination
                     background
-                    :layout="data.tableConfig.page.layout"
-                    :total="data.tableConfig.page.total"
-                    :current-page="data.tableConfig.page.current_page"
-                    :page-sizes='data.tableConfig.page.page_sizes'
+                    :layout="data.tableConfig.pageData"
+                    :total="pageData.total"
+                    :current-page="pageData.current_page"
+                    :page-sizes='pageData.page_sizes'
+                    :page-size='pageData.page_size'
                     @current-change='current_change'
                     @size-change='size_change'
                     class="pull-right">
@@ -41,13 +43,19 @@
 </template>
 
 <script>
-import { ref , reactive, onMounted } from '@vue/composition-api';
+import { ref , reactive, onMounted, watch } from '@vue/composition-api';
 import { get_users , add_users } from '@/api/user';
-import { loadTableData } from '@/api/common';
+// import { loadTableData } from '@/api/common';
+import { loadData } from './tableload';
+import { page } from './page';
 export default {
     props: {
         tableConfig: {
             type: Object,
+            default: []
+        },
+        tableSelect: {
+            type: Array,
             default: []
         }
     },
@@ -57,7 +65,8 @@ export default {
                 thead: [],
                 showSelect: false,
                 requestData: {},
-                page: {}
+                // page: {},
+                pageData: 'total,sizes,prev,pager,next'
             },
             tableData: []
         })
@@ -77,29 +86,77 @@ export default {
                 }
             }
         }
-        const loadData = () => {
-            loadTableData(data.tableConfig.requestData).then( res => {
-                data.tableData = res.data.data.data;
-                data.tableConfig.page.total = res.data.data.total
-            })
-        }
-        const current_change = ( (pagenumber) => {
-            data.tableConfig.requestData.data.pageNumber = pagenumber;
-            loadData()
+        //  // 请求数据
+        const { tableData , tableLoadData } = loadData();
+        const { pageData , setTotal , current_change , size_change } = page();
+        // const loadData = () => {
+        //     loadTableData(data.tableConfig.requestData).then( res => {
+        //         data.tableData = res.data.data.data;
+        //         data.tableConfig.page.total = res.data.data.total
+        //     })
+        // }
+        //  // 监听表格数据
+        watch( [
+                () => tableData.item , 
+                () => tableData.total
+            ] , ( [ newData , newtotal ] ) => {
+            data.tableData = newData;
+            // data.tableConfig.page.total = newtotal;
+            setTotal(newtotal)
         } )
 
-        const size_change = ( (pagesize) => {
-            data.tableConfig.requestData.data.pageSize = pagesize;
-            loadData()
-        } )
+        //  // 分页处理
+
+        watch( [
+            () => pageData.current_page,
+            () => pageData.page_size
+        ] , ([currentPage,pageSize]) => {
+            data.tableConfig.requestData.data.pageNumber = currentPage;
+            data.tableConfig.requestData.data.pageSize = pageSize;
+            tableLoadData(data.tableConfig.requestData)
+        })
+        
+        // const current_change = ( (pagenumber) => {
+        //     data.tableConfig.requestData.data.pageNumber = pagenumber;
+        //     // loadData()
+        // } )
+
+        // const size_change = ( (pagesize) => {
+        //     data.tableConfig.requestData.data.pageSize = pagesize;
+        //     // loadData()
+        // } )
+        const select = (value) => {
+            const ids = [];
+            value.map( item => ids.push(item.id) )
+            context.emit( 'update:tableSelect', ids )
+        }
+
+        const refresh = () => {
+            tableLoadData(data.tableConfig.requestData)
+        }
+        
+        const refreshWithParams = (params) => {
+            const requestData = Object.assign( params , {
+                pageNumber: 1,
+                pageSize: 5
+            } );
+            data.tableConfig.requestData.data = requestData;
+            tableLoadData(data.tableConfig.requestData)
+        }
+
         onMounted( () => {
             initTable()
-            loadData()
+            // loadData()
+            tableLoadData(data.tableConfig.requestData)
         } )
         return {
             data,
             current_change,
-            size_change
+            size_change,
+            pageData,
+            select,
+            refresh,
+            refreshWithParams
         }
     }
 }

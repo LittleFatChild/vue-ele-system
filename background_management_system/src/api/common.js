@@ -18,6 +18,7 @@ export const common = () => {
     }
 }
 
+//  //表格请求
 export const loadTableData = (params) => {
     return axios.request({
         method: params.method,
